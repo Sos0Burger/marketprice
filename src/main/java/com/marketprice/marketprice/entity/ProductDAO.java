@@ -24,6 +24,9 @@ public class ProductDAO {
     @Column(name = "price")
     private Integer price;
 
+    @Column(name = "Description")
+    private String description;
+
     @Column(name = "url")
     private String url;
 
