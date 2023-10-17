@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.Set;
+import java.util.List;
 
 @Entity(name = "products")
 @Getter
@@ -24,19 +24,19 @@ public class ProductDAO {
     @Column(name = "price")
     private Integer price;
 
-    @Column(name = "Description")
+    @Column(name = "Description", columnDefinition = "TEXT")
     private String description;
 
-    @Column(name = "url")
+    @Column(name = "url", columnDefinition = "TEXT")
     private String url;
 
-    @Column(name = "picture")
+    @Column(name = "picture", columnDefinition = "TEXT")
     private String picture;
 
     @ManyToOne
     @JoinColumn(name="store_id", nullable=false)
     private StoreDAO store;
 
-    @OneToMany(mappedBy="product")
-    private Set<PriceHistory> priceHistory;
+    @OneToMany(mappedBy="product", fetch = FetchType.EAGER)
+    private List<PriceHistory> priceHistory;
 }

@@ -1,6 +1,7 @@
 package com.marketprice.marketprice.view;
 
 import com.marketprice.marketprice.entity.ProductDAO;
+import com.marketprice.marketprice.service.IProductService;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
@@ -17,14 +18,16 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.virtuallist.VirtualList;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
+import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-
-import java.util.ArrayList;
-import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
 
 
 @Route()
+@PageTitle("MarketPrice")
 public class MainView extends VerticalLayout {
+    @Autowired
+    IProductService productService;
     private ComponentRenderer<Component, ProductDAO> productCardRenderer = new ComponentRenderer<>(
             product -> {
                 HorizontalLayout cardLayout = new HorizontalLayout();
@@ -48,7 +51,7 @@ public class MainView extends VerticalLayout {
                 descriptionScroller.setMinWidth("100px");
 
                 VerticalLayout buttonLayout = new VerticalLayout();
-                buttonLayout.setWidth("100%");
+                buttonLayout.setWidth("25%");
 
                 Button buy = new Button("Купить");
                 buy.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
@@ -58,7 +61,7 @@ public class MainView extends VerticalLayout {
                 Button compare = new Button("Сравнить цены");
                 compare.addThemeVariants(ButtonVariant.LUMO_CONTRAST);
                 compare.setWidth("100%");
-                compare.addClickListener(event-> UI.getCurrent().getPage().open("localhost:8080/compare/"+product.getId()));
+                compare.addClickListener(event-> UI.getCurrent().getPage().open("http://localhost:8080/compare/"+product.getId()));
 
                 buttonLayout.add(buy, compare);
 
@@ -66,7 +69,7 @@ public class MainView extends VerticalLayout {
                 return cardLayout;
             });
 
-    MainView() {
+    MainView(IProductService productService) {
         this.setHeight("100%");
         HorizontalLayout searchLayout = new HorizontalLayout();
         searchLayout.setWidthFull();
@@ -77,29 +80,25 @@ public class MainView extends VerticalLayout {
         searchField.setPrefixComponent(new Icon(VaadinIcon.SEARCH));
         searchField.setValueChangeMode(ValueChangeMode.EAGER);
 
+
         Button searchButton = new Button();
         searchButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         searchButton.setText("Найти");
 
+
         searchLayout.add(searchField, searchButton);
 
-
-        List<ProductDAO> productDAOList = new ArrayList<>();
-        productDAOList.add(new ProductDAO(1L,
-                "Apple Iphone 14",
-                99000,
-                "Смартфон Apple iPhone 14 128 ГБ – компактная модель с безрамочным дисплеем OLED 6.1 дюйма. Металлический корпус мобильного устройства соответствует стандарту защищенности IP68 – он устойчив к воздействию влаги и пыли. Передняя панель обладает покрытием Ceramic Shield для защиты экрана от появления царапин и различных дефектов.\n" +
-                        "Основная сдвоенная камера 12+12 Мп со вспышкой True Tone и целым рядом режимов позволяет создавать снимки профессионального качества в любых условиях освещенности. Камера 12 Мп на передней стороне предназначена для селфи и качественной видеосвязи. Среди особенностей Apple iPhone 14 – чип Apple A15 Bionic с 5-ядерным GPU, широкий набор интерфейсов (NFC, 5G, GPS, Wi-Fi и Bluetooth), длительное время автономности, поддержка аксессуаров и устройств MagSafe с магнитной беспроводной зарядкой.",
-                "https://www.ozon.ru/category/apple-iphone15/",
-                "https://kingstore.link/upload/iblock/cfa/60ue3p1db1249hhp0mu1kmcm69gmdvd5.jpeg",
-                null,
-                null));
         VirtualList<ProductDAO> list = new VirtualList<>();
-        list.setItems(productDAOList);
         list.setRenderer(productCardRenderer);
         list.setWidthFull();
         list.setHeight("100%");
         add(searchLayout, list);
+
+        searchButton.addClickListener(event->{
+            list.setItems(productService.searchByName(searchField.getValue()));
+            list.getDataProvider().refreshAll();
+        });
+        list.setItems(productService.searchByName(searchField.getValue()));
     }
 
 }
